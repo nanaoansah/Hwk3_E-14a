@@ -29,16 +29,20 @@
 
 
     <!-- Follow/Unfollow buttons -->
-    {% if follow_flag %}
-        <form action="#" method="GET">
-          <button type="submit" class="btn btn-primary btn-xl js-scroll-trigger"> Unfollow </button>
-        </form>
-        {% else %}
+    {% if follow_flag is defined %}
 
-        <form action="/signup" method="GET">
-          <button type="submit" class="btn btn-primary btn-xl js-scroll-trigger"> Follow </button>
-        </form>
+      {% if follow_flag %}
+      <form action="/unfollow/{{user.username}}" method="POST">
+        <button type="submit" class="btn btn-primary btn-xl js-scroll-trigger"> Unfollow </button>
+      </form>
+      {% else %}
+
+      <form action="/follow/{{user.username}}" method="POST">
+        <button type="submit" class="btn btn-primary btn-xl js-scroll-trigger"> Follow </button>
+      </form>
       {% endif %}
+
+    {% endif %}
 
  </div>
 </header>

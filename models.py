@@ -9,6 +9,12 @@ class User(db.Model):
     username = db.Column(db.String(64), unique=True, nullable=False)
     password = db.Column(db.String(128), nullable=False)
 
+class Followers(db.Model):
+    __tablename__ = 'followers'
+    fid = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    follower_id = db.Column(db.Integer, db.ForeignKey('users.uid'), nullable=False)
+    followed_id = db.Column(db.Integer, db.ForeignKey('users.uid'), nullable=False)
+
 class Post(db.Model):
     __tablename__ = 'posts'
     pid = db.Column(db.Integer, primary_key=True, autoincrement=True)

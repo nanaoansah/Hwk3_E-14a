@@ -1,6 +1,6 @@
 #import libraries
 from flask import Flask, flash, render_template, request, url_for, redirect, session
-from models import db, User, Post
+from models import db, User, Post, Followers
 from forms import SignupForm, LoginForm, NewpostForm
 from passlib.hash import sha256_crypt
 
@@ -17,8 +17,13 @@ db.init_app(app)
 def index():
     if 'username' in session:
         session_user = User.query.filter_by(username=session['username']).first()
-        posts = Post.query.filter_by(author=session_user.uid).all()
-        return render_template('index.html', title='Home', posts=posts,
+        #posts = Post.query.filter_by(author=session_user.uid).all()
+        ##posts = db.session.query(Post, User).outerjoin(Post.author==User.uid).all()
+
+        users_followed = Followers.query.filter_by(follower_id=session_user.uid).all()
+        uids_followed = [f.followed_id for f in users_followed] + [session_user.uid]
+        followed_posts = Post.query.filter(Post.author.in_(uids_followed)).all()
+        return render_template('index.html', title='Home', posts=followed_posts,
         session_username=session_user.username)
     else:
         all_posts = Post.query.all()
@@ -63,7 +68,6 @@ def login():
         else:
             session['username'] = username
             return redirect(url_for('index'))
-            #return username
     else:
         return render_template('login.html', title='Login', form=form)
 
@@ -89,18 +93,53 @@ def newpost():
 @app.route('/search', methods=['GET', 'POST'])
 def search():
     search_user = request.form['search']
-    #user = User.query.filter_by(username=search_user).first()
-    #posts = Post.query.filter_by(author=user.uid).all()
-    #return render_template('profile.html', title='Profile', username=search_user, user=user, posts=posts)
     return redirect(url_for('profile', username=search_user))
 
 @app.route('/profile/<string:username>', methods=['GET', 'POST'])
 def profile(username):
-    #search_user = username
-    follow_flag = False
     user = User.query.filter_by(username=username).first()
     posts = Post.query.filter_by(author=user.uid).all()
-    return render_template('profile.html', title='Profile', user=user, posts=posts, follow_flag = follow_flag)
+
+    if "username" in session:
+        session_user = User.query.filter_by(username=session['username']).first()
+
+        if session_user.uid == user.uid:
+            return render_template('profile.html', title='Profile', user=user, posts=posts)
+
+        elif Followers.query.filter_by(follower_id=session_user.uid, followed_id=user.uid).first():
+            follow_flag = True
+        else:
+            follow_flag = False
+        return render_template('profile.html', title='Profile', user=user, posts=posts, follow_flag = follow_flag)
+
+    return render_template('profile.html', title='Profile', user=user, posts=posts)
+
+@app.route('/follow/<username>', methods=['POST'])
+def follow(username):
+    session_user = User.query.filter_by(username=session['username']).first()
+    user_to_follow = User.query.filter_by(username=username).first()
+
+    print('session_user: ', session_user)
+    print('user_to_follow: ', user_to_follow)
+
+    new_follow = Followers(follower_id=session_user.uid, followed_id=user_to_follow.uid)
+
+    db.session.add(new_follow)
+    db.session.commit()
+    return redirect(url_for('profile', username=username))
+
+@app.route('/unfollow/<username>', methods=['POST'])
+def unfollow(username):
+    session_user = User.query.filter_by(username=session['username']).first()
+    user_to_unfollow = User.query.filter_by(username=username).first()
+
+    print('session_user: ', session_user)
+    print('user_to_unfollow: ', user_to_unfollow)
+
+    delete_follow = Followers.query.filter_by(follower_id=session_user.uid, followed_id=user_to_unfollow.uid).first()
+    db.session.delete(delete_follow)
+    db.session.commit()
+    return redirect(url_for('profile', username=username))
 
 if __name__ == "__main__":
     app.run(debug=True)
