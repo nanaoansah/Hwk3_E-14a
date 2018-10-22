@@ -27,3 +27,16 @@ CREATE TABLE followers (
     FOREIGN KEY (follower_id) REFERENCES users(uid),
     FOREIGN KEY (followed_id) REFERENCES users(uid)
 );
+
+DROP VIEW IF EXISTS postDescr;
+CREATE VIEW postDescr AS
+    SELECT *
+    FROM posts, users
+    WHERE posts.author = users.uid;
+
+DROP VIEW IF EXISTS postDescr;
+CREATE VIEW postDescr AS
+    SELECT pid, author, content, uid, username
+    FROM posts, users
+    WHERE posts.author = users.uid;
+select * from postDescr;
