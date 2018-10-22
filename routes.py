@@ -4,6 +4,7 @@ from models import db, User, Post, Followers
 from forms import SignupForm, LoginForm, NewpostForm
 from passlib.hash import sha256_crypt
 from flask_heroku import Heroku
+from sqlalchemy import func
 
 app = Flask(__name__)
 app.secret_key = "cscie14a-hw3"
@@ -25,11 +26,13 @@ def index():
         users_followed = Followers.query.filter_by(follower_id=session_user.uid).all()
         uids_followed = [f.followed_id for f in users_followed] + [session_user.uid]
         followed_posts = Post.query.filter(Post.author.in_(uids_followed)).all()
+        max_post = db.session.query(func.max(Post.pid)).scalar()
         return render_template('index.html', title='Home', posts=followed_posts,
-        session_username=session_user.username)
+        session_username=session_user.username, max_post=max_post)
     else:
         all_posts = Post.query.all()
-        return render_template('index.html', title='Home', posts=all_posts)
+        max_post = db.session.query(func.max(Post.pid)).scalar()
+        return render_template('index.html', title='Home', posts=all_posts, max_post=max_post)
 
 
 @app.route('/signup', methods=['GET', 'POST'])
