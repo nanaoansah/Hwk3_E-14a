@@ -8,6 +8,10 @@ class User(db.Model):
     uid = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(64), unique=True, nullable=False)
     password = db.Column(db.String(128), nullable=False)
+    posts = db.relationship('Post', backref='postauth', lazy='dynamic')
+
+    def __repr__(self):
+        return '{}'.format(self.username)
 
 class Followers(db.Model):
     __tablename__ = 'followers'

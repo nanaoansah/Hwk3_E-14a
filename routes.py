@@ -99,7 +99,7 @@ def search():
 
 @app.route('/profile/<string:username>', methods=['GET', 'POST'])
 def profile(username):
-    user = User.query.filter_by(username=username).first()
+    user = User.query.filter_by(username=username).first_or_404()
     posts = Post.query.filter_by(author=user.uid).all()
 
     if "username" in session:
