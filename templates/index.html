@@ -24,7 +24,7 @@
 
               <!-- Show Authors Posts -->
               {% for p in posts %}
-                <p> Author@{{ p.postauth }}: {{ p.content }}</p>
+                <p id="{{ p.pid }}"> Author@{{ p.postauth }}: {{ p.content }}</p>
               {% endfor %}
 
              </div>
@@ -63,4 +63,7 @@
       </form>
     </div>
   </header>
+  <script>
+    document.getElementById("{{max_post}}").style.background = "#1b768855";
+    </script>
 {% endblock %}
